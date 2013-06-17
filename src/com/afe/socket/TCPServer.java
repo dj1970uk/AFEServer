@@ -17,7 +17,8 @@ public class TCPServer implements Runnable{
     public static final String SERVERIP = "127.0.0.1";
     public static final int SERVERPORT = 12346;
     public static String pubString ="";
-    public static Socket client;
+    public static Socket client = null;
+    public static ServerSocket serverSocket = null;
     Context context;
     public TCPServer(Context c) {
 		// TODO Auto-generated constructor stub
@@ -31,15 +32,17 @@ public class TCPServer implements Runnable{
          try {
               Log.d("TCP", "S: Connecting...");
               
-              ServerSocket serverSocket = new ServerSocket(SERVERPORT);
-              while (true) {
-            	  client = serverSocket.accept();
+              try { 
+              	   serverSocket = new ServerSocket(SERVERPORT);
+              } catch(IOException e) { e.printStackTrace; }
+              while (!Thread.currentThread().isInterrupted()) { // Instead of while(true)
+            	  if ( client == null ) client = serverSocket.accept(); // Correct way of assignment
             	  //socList.client();
             	  Log.d("TCP", "S: Receiving...");
             	  try {
                       BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()), 8192);
                       String str = new String();
-                      while (!in.ready());
+                      // while (!in.ready()); // Online socket programming tutorials don't have this
                       str = in.readLine();
                       Log.e("TCP", "S: Received: '" + str + "'");
                       if(str != null || str.length() > 0 ) {
@@ -92,7 +95,8 @@ public class TCPServer implements Runnable{
 	public void stopServer() {
 		// TODO Auto-generated method stub
 		try {
-			client.close();
+		//	client.close(); // Wrong command!!!
+		        serverSocket.close(); // Right command!!!
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
